@@ -15,9 +15,9 @@ class SpotifyAuth:
             auth_manager = SpotifyPKCE(
                 client_id=os.getenv("SPOTIFY_CLIENT_ID"),
                 redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
-                scope="playlist-read-private playlist-modify-private playlist-modify-public "
+                scope="playlist-read-private playlist-modify-private playlist-modify-public playlist-read-collaborative "
                       "user-read-playback-state user-modify-playback-state user-library-read "
-                      "user-library-modify streaming"
+                      "user-library-modify streaming user-read-email user-read-private "
             )
             self.client = spotipy.Spotify(auth_manager=auth_manager)
 

@@ -1,10 +1,15 @@
 from mcp.server.fastmcp import FastMCP
 from src.tools.playlist_tools import add_playlist_tools
+from src.tools.playback_tools import add_playback_tools
+from src.tools.search_tools import add_search_tools
 from src.auth import spotify_auth
 
 mcp = FastMCP("spotify")
+#add scopes
 
 add_playlist_tools(mcp)
+add_playback_tools(mcp)
+add_search_tools(mcp)
 
 def main():
     if not spotify_auth.get_client():
@@ -17,4 +22,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-    

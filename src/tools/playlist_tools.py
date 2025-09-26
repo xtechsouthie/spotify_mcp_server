@@ -23,7 +23,7 @@ def add_playlist_tools(mcp: FastMCP):
 
             for playlist in playlists["items"]:
                 result += f"Playlist Name: {playlist["name"]}, Total tracks in this playlist: {playlist["tracks"]["total"]} tracks.\n"
-                result += f"ID of the playlist: `{playlist['id']}`\n---\n"
+                result += f"ID of the playlist: '{playlist["id"]}'\n---\n"
             return result
         except Exception as e:
             return f"Error in fetching playists: {e}"
@@ -125,7 +125,7 @@ def add_playlist_tools(mcp: FastMCP):
         
         try:
             user = client.current_user()
-            playlists = client.user_playlists(user["id"], limit, offset)
+            playlists = client.user_playlists(user["id"], limit, offset) #this dosent retun owned playlist
             result = ""
             for i, playlist in enumerate(playlists["items"], 1):
                 result += f"{i}. Playlist Name: {playlist["name"]}, Playlist Description: {playlist["description"]}, Playlist ID: '{playlist["id"]}'.\n"
@@ -161,7 +161,7 @@ def add_playlist_tools(mcp: FastMCP):
             return f"Error fetching user playlist: {e}"
 
     @mcp.tool()
-    async def playlist_add_items(playlist_id: str, items: List[str], position: int = None):
+    async def playlist_add_items(playlist_id: str, items: List[str], position: int = None) -> str:
         """
         Add tracks or episodes to a spotify playlist.
 
@@ -182,7 +182,7 @@ def add_playlist_tools(mcp: FastMCP):
         
     
     @mcp.tool()
-    async def playlist_remove_items(playlist_id: str, items: List[str], snapshot_id: str = None):
+    async def playlist_remove_items(playlist_id: str, items: List[str], snapshot_id: str = None) -> str:
         """
         Remove tracks or episodes from a given spotify playlist
 
