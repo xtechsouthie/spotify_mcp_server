@@ -1,12 +1,13 @@
 from mcp.server.fastmcp import FastMCP
 from ..auth import spotify_auth
+from typing import List
 
 def add_playlist_tools(mcp: FastMCP):
 
     @mcp.tool()
     async def get_user_playlist(limit: int = 20) -> str:
         """
-        Get user's spotify playlist
+        Get current user's followed and owned spotify playlist
 
         Args:
             limit: Number of playlists to retrive (default = 20)
@@ -81,7 +82,8 @@ def add_playlist_tools(mcp: FastMCP):
                 track = item["track"]
                 if track:
                     artists = ", ".join([artist["name"] for artist in track["artists"]])
-                    result += f"{i}. Track: {track["name"]}, Artists: {artists}.\n"
+                    uri = track["uri"]
+                    result += f"{i}. Track: {track["name"]}, Artists: {artists}, Track URI: '{uri}'.\n"
 
             return result
         except Exception as e:
@@ -107,3 +109,95 @@ def add_playlist_tools(mcp: FastMCP):
             return f"Created playlist with NAME: {name},  ID: {playlist["id"]}"
         except Exception as e:
             return f"Error while creating playlist: {e}"
+    
+    @mcp.tool()
+    async def get_current_users_playlists(limit: int = 50, offset: int = 0) -> str:
+        """
+        Get the playlist's of the current user
+
+        Args:
+            limit: maximum number of items to return (default: 50) (Maximum value: 50)
+            offset: the index of the first item to return (default: 0)
+        """
+        client = spotify_auth.get_client()
+        if not client:
+            return "error with user authentication"
+        
+        try:
+            user = client.current_user()
+            playlists = client.user_playlists(user["id"], limit, offset)
+            result = ""
+            for i, playlist in enumerate(playlists["items"], 1):
+                result += f"{i}. Playlist Name: {playlist["name"]}, Playlist Description: {playlist["description"]}, Playlist ID: '{playlist["id"]}'.\n"
+            if not result:
+                return f"User has no playlists."
+            return result
+        except Exception as e:
+            return f"Error fetching user playlist: {e}"
+
+    @mcp.tool()
+    async def get_users_owned_playlist(user_id: str, limit: int = 50, offset: int = 0) -> str:
+        """
+        Get the playlist's of a particular user
+
+        Args:
+            user_id: user id of the user
+            limit: maximum number of items to return (default: 50) (Maximum value: 50)
+            offset: the index of the first item to return (default: 0)
+        """
+        client = spotify_auth.get_client()
+        if not client:
+            return "error with user authentication"
+        
+        try:
+            playlists = client.user_playlists(user_id, limit, offset)
+            result = ""
+            for i, playlist in enumerate(playlists["items"], 1):
+                result += f"{i}. Playlist Name: {playlist["name"]}, Playlist Description: {playlist["description"]}, Playlist ID: '{playlist["id"]}'.\n"
+            if not result:
+                return f"User has no playlists."
+            return result
+        except Exception as e:
+            return f"Error fetching user playlist: {e}"
+
+    @mcp.tool()
+    async def playlist_add_items(playlist_id: str, items: List[str], position: int = None):
+        """
+        Add tracks or episodes to a spotify playlist.
+
+        Args:
+            playlist_id: the id of the spotify playlist to add items to
+            items: a list of track/episode URIs or URLs
+            position: the position in the playlist you want to add the item (default = None (it will add in the end))
+        """
+        client = spotify_auth.get_client()
+        if not client:
+            return "error with user authentication"
+        
+        try:
+            playlist = client.playlist_add_items(playlist_id, items, position)
+            return f"Successfully added items to playlist. Playlist snapshot id: {playlist["snapshot_id"]}"
+        except Exception as e:
+            return f"Error adding items to playlist: {e}"
+        
+    
+    @mcp.tool()
+    async def playlist_remove_items(playlist_id: str, items: List[str], snapshot_id: str = None):
+        """
+        Remove tracks or episodes from a given spotify playlist
+
+        Args:
+            playlist_id: id of playlist to remove items from
+            items: a list of track/episode URIs or URLs
+            snapshot_id: optional id of playlist snapshot (default: None)
+        """
+        client = spotify_auth.get_client()
+        if not client:
+            return "error with user authentication"
+        
+        try:
+            playlist = client.playlist_remove_all_occurrences_of_items(playlist_id, items, snapshot_id)
+            return f"Successfully removed items from playlist. Playlist snapshot id: {playlist["snapshot_id"]}"
+        except Exception as e:
+            return f"Error removing items from playlist: {e}"
+        
