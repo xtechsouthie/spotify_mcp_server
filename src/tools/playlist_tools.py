@@ -138,7 +138,7 @@ def add_playlist_tools(mcp: FastMCP):
     @mcp.tool()
     async def get_users_owned_playlist(user_id: str, limit: int = 50, offset: int = 0) -> str:
         """
-        Get the playlist's of a particular user
+        Get the playlist's owned by an user, i.e. the playlists he can edit
 
         Args:
             user_id: user id of the user
@@ -151,11 +151,24 @@ def add_playlist_tools(mcp: FastMCP):
         
         try:
             playlists = client.user_playlists(user_id, limit, offset)
-            result = ""
-            for i, playlist in enumerate(playlists["items"], 1):
-                result += f"{i}. Playlist Name: {playlist["name"]}, Playlist Description: {playlist["description"]}, Playlist ID: '{playlist["id"]}'.\n"
-            if not result:
+            current_user = client.current_user()
+            current_user_id = current_user["id"]
+
+            owned_playlists = []
+            for p in playlists['items']:
+                if playlist['owner']['id'] == current_user_id:
+                    owned_playlists.append(p)
+            
+            if not owned_playlists:
                 return f"User has no playlists."
+
+            result = ""
+            for i, playlist in enumerate(owned_playlists["items"], 1):
+                result += f"{i}. Playlist Name: {playlist["name"]}, Playlist Description: {playlist["description"]}, Playlist ID: '{playlist["id"]}'.\n"
+
+            total = playlists["total"]
+            if offset < (total - limit):
+                result += f"Try changing offset if you dont find the desired playlist, current offset: {offset}, total playlists: {total}, current limit: {limit}"
             return result
         except Exception as e:
             return f"Error fetching user playlist: {e}"
@@ -200,4 +213,6 @@ def add_playlist_tools(mcp: FastMCP):
             return f"Successfully removed items from playlist. Playlist snapshot id: {playlist["snapshot_id"]}"
         except Exception as e:
             return f"Error removing items from playlist: {e}"
+        
+    
         

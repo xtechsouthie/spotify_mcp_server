@@ -193,5 +193,67 @@ def add_playback_tools(mcp: FastMCP):
         except Exception as e:
             return f"Error in adding song to queue: {e}"
         
+    @mcp.tool()
+    async def get_user_devices() -> str:
+        """
+        Get information about user's all available devices (device name, device ID, device volume, etc)
+        """
+        client = spotify_auth.get_client()
+        if not client:
+            return "error with user authentication"
+        
+        try:
+            devices = client.devices()
+            if not devices.get("devices"):
+                return "No devices available"
+            
+            result = "DEVICES:\n\n"
+            for i, device in enumerate(devices["devices"], 1):
+                result += f"{i}. Device name: {device["name"]}, Type: {device["type"]}\n"
+                result += f"Device ID: '{device["id"]}'\n"
+                result += f"is the device active: {device["is_active"]}, device volume: {device["volume_percent"]}\n---\n"
+
+            return result
+        except Exception as e:
+            return f"Error: {e}"
+        
+    @mcp.tool()
+    async def transfer_playback(device_id: str, force_play: bool = True) -> str:
+        """
+        Transfer playback to another device
+
+        Args:
+            device_id: the device ID you want to transfer playback to
+            force_play: true: after transfer, play. false: keep current state. (default = true)
+        """
+        client = spotify_auth.get_client()
+        if not client:
+            return "error with user authentication"
+        
+        try:
+            response = client.transfer_playback(device_id=device_id, force_play=force_play)
+            return "Successfully transfered the playback to the desired device"
+        except Exception as e:
+            return f"Error transfering playback to device: {e}"
+
+
+    @mcp.tool()
+    async def set_device_volume(volume_percent: int, device_id: str = None) -> str:
+        """
+        Set/change the device playback volume.
+
+        Args:
+            volume_percent: volume between 0 and 100
+            device_id: target device id for setting/changing volume (default = None)
+        """
+        client = spotify_auth.get_client()
+        if not client:
+            return "error with user authentication"
+        
+        try: 
+            response = client.volume(volume_percent=volume_percent, device_id=device_id)
+            return "Successfully changed/set volume in the given target device"
+        except Exception as e:
+            return f"Error setting/changing device volume: {e}"
     
         

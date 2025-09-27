@@ -143,7 +143,6 @@ def add_album_tools(mcp: FastMCP):
         except Exception as e:
             return f"Error getting artist's top tracks: {e}"
         
-    
 
             
     

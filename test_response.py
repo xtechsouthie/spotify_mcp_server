@@ -6,16 +6,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+#### This file is made for testing responses of them spotipy func
+
 def test_response():
     auth_manager = SpotifyPKCE(
         client_id=os.getenv("SPOTIFY_CLIENT_ID"),
         redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
-        scope="playlist-read-private user-read-playback-state user-modify-playback-state"
+        scope="playlist-read-private user-read-playback-state user-modify-playback-state user-follow-read"
     )
     sp = spotipy.Spotify(auth_manager=auth_manager)
     
     user = sp.current_user()
-    playlists = sp.search(q="hello", type="track,artist,album,playlist", limit=10)
+    playlists = sp.transfer_playback(device_id="##")
     print("Current user:\n")
     print(json.dumps(playlists, indent=2))
     
